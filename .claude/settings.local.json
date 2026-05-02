@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p \"C:/Users/dhafer/OneDrive/Desktop/projet sem/backend/src/main/java/com/recrutement/app/config\")",
+      "Bash(mkdir -p \"C:/Users/dhafer/OneDrive/Desktop/projet sem/backend/src/main/java/com/recrutement/app/security\")",
+      "Bash(mkdir -p \"C:/Users/dhafer/OneDrive/Desktop/projet sem/backend/src/main/java/com/recrutement/app/controller\")",
+      "Bash(mkdir -p \"C:/Users/dhafer/OneDrive/Desktop/projet sem/backend/src/main/java/com/recrutement/app/service\")",
+      "Bash(mkdir -p \"C:/Users/dhafer/OneDrive/Desktop/projet sem/backend/src/main/java/com/recrutement/app/repository\")"
+    ]
+  }
+}
