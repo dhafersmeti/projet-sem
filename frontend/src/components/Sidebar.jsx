@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   LayoutDashboard, Users, Briefcase, FileText,
-  Calendar, LogOut, ClipboardList, Bell, BarChart2,
+  Calendar, LogOut, ClipboardList, Bell,
   UserCircle, Gift, Lock,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -14,7 +14,6 @@ const STAFF_NAV = [
   { to: '/job-offers',   label: 'Offres',           icon: Briefcase       },
   { to: '/applications', label: 'Candidatures',     icon: FileText        },
   { to: '/interviews',   label: 'Entretiens',       icon: Calendar        },
-  { to: '/reports',      label: 'Rapports',         icon: BarChart2       },
 ]
 
 const CANDIDATE_NAV = [

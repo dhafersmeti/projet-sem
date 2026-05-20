@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,26 +55,5 @@ public class DashboardService {
                 .acceptedCount(accepted)
                 .rejectedCount(applicationRepository.countByStatus(Application.Status.REJECTED))
                 .build();
-    }
-
-    public List<Map<String, Object>> getReportByPosition() {
-        return jobOfferRepository.findAll().stream()
-                .map(offer -> {
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    row.put("positionId", offer.getId());
-                    row.put("position", offer.getTitle());
-                    List<Application> apps = applicationRepository.findByJobOfferId(offer.getId());
-                    long acceptedCount = apps.stream()
-                            .filter(a -> a.getStatus() == Application.Status.ACCEPTED).count();
-                    long rejectedCount = apps.stream()
-                            .filter(a -> a.getStatus() == Application.Status.REJECTED).count();
-                    row.put("totalApplications", apps.size());
-                    row.put("accepted", acceptedCount);
-                    row.put("rejected", rejectedCount);
-                    row.put("conversionRate", apps.isEmpty() ? 0.0
-                            : Math.round((double) acceptedCount / apps.size() * 100.0) / 100.0);
-                    return row;
-                })
-                .collect(Collectors.toList());
     }
 }

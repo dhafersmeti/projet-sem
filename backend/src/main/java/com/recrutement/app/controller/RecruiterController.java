@@ -4,7 +4,6 @@ import com.recrutement.app.dto.JobOfferEmbaucheDto;
 import com.recrutement.app.service.ApplicationService;
 import com.recrutement.app.service.DashboardService;
 import com.recrutement.app.service.OfferEmbaucheService;
-import com.recrutement.app.service.ReportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,36 +26,10 @@ public class RecruiterController {
     private final DashboardService dashboardService;
     private final ApplicationService applicationService;
     private final OfferEmbaucheService offerEmbaucheService;
-    private final ReportService reportService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard() {
         return ResponseEntity.ok(dashboardService.getStats());
-    }
-
-    @GetMapping("/reports/by-position")
-    public ResponseEntity<?> getReportByPosition() {
-        return ResponseEntity.ok(dashboardService.getReportByPosition());
-    }
-
-    @GetMapping("/reports/export/csv")
-    public ResponseEntity<byte[]> exportCsv() throws IOException {
-        String csv = reportService.exportCsv();
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"rapport_recrutement.csv\"")
-                .body(csv.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-    }
-
-    @GetMapping("/reports/export/pdf")
-    public ResponseEntity<byte[]> exportPdf() throws IOException {
-        byte[] pdf = reportService.exportPdf();
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"rapport_recrutement.pdf\"")
-                .body(pdf);
     }
 
     @PostMapping("/applications/{id}/status")

@@ -14,7 +14,6 @@ import ApplicationFormPage             from './pages/applications/ApplicationFor
 import InterviewsPage                  from './pages/interviews/InterviewsPage'
 import InterviewFormPage               from './pages/interviews/InterviewFormPage'
 import EvaluationPage                  from './pages/interviews/EvaluationPage'
-import ReportsPage                     from './pages/reports/ReportsPage'
 import ChangePasswordPage              from './pages/portal/ChangePasswordPage'
 
 import PortalHomePage                  from './pages/portal/PortalHomePage'
@@ -41,9 +40,7 @@ export default function App() {
 
         {/* Routes staff (admin + recruteur) */}
         <Route path="/"        element={<ProtectedRoute allowedRoles={STAFF}><DashboardPage /></ProtectedRoute>} />
-        <Route path="/reports" element={<ProtectedRoute allowedRoles={STAFF}><ReportsPage /></ProtectedRoute>} />
-
-        <Route path="/candidates"           element={<ProtectedRoute allowedRoles={STAFF}><CandidatesPage /></ProtectedRoute>} />
+<Route path="/candidates"           element={<ProtectedRoute allowedRoles={STAFF}><CandidatesPage /></ProtectedRoute>} />
         <Route path="/candidates/new"       element={<ProtectedRoute allowedRoles={STAFF}><CandidateFormPage /></ProtectedRoute>} />
         <Route path="/candidates/:id"       element={<ProtectedRoute allowedRoles={STAFF}><CandidateDetailPage /></ProtectedRoute>} />
         <Route path="/candidates/:id/edit"  element={<ProtectedRoute allowedRoles={STAFF}><CandidateFormPage /></ProtectedRoute>} />
