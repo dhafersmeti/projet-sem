@@ -2,9 +2,9 @@
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   Table, TableRow, TableCell, WidthType, BorderStyle, ShadingType,
-  Header, Footer, PageNumberElement, NumberFormat, PageBreak,
-  TableOfContents, LevelFormat, convertInchesToTwip,
-  UnderlineType,
+  Header, Footer, NumberFormat, PageBreak,
+  LevelFormat, convertInchesToTwip,
+  UnderlineType, SimpleField,
 } = require("docx");
 const fs = require("fs");
 
@@ -89,7 +89,7 @@ function subBullet(text) { return bullet(text, 1); }
 function hline() {
   return new Paragraph({
     children: [],
-    border: { bottom: { color: NAVY, space: 1, value: BorderStyle.SINGLE, size: 6 } },
+    border: { bottom: { color: NAVY, space: 1, style: BorderStyle.SINGLE, size: 6 } },
     spacing: { before: 80, after: 80 },
   });
 }
@@ -235,11 +235,33 @@ function resume() {
 // ─── Table des matières ───────────────────────────────────────────────────────
 
 function toc() {
+  const entries = [
+    ["1", "Introduction générale", "5"],
+    ["2", "Contexte, problématique et objectifs", "6"],
+    ["3", "Cahier des charges et périmètre", "8"],
+    ["4", "Méthodologie et organisation", "10"],
+    ["5", "Architecture et conception technique", "11"],
+    ["6", "Implémentation backend (Spring Boot)", "14"],
+    ["7", "Implémentation frontend (React)", "19"],
+    ["8", "Fonctionnalités phares", "22"],
+    ["9", "Tests et validation", "26"],
+    ["10", "Déploiement et utilisation", "28"],
+    ["11", "Limites et perspectives", "30"],
+    ["12", "Conclusion", "32"],
+    ["", "Annexes", "33"],
+  ];
   return [
-    new TableOfContents("Table des matières", {
-      hyperlink: true,
-      headingStyleRange: "1-3",
-    }),
+    h1("Table des matières"),
+    ...entries.map(([num, title, page]) =>
+      new Paragraph({
+        children: [
+          new TextRun({ text: num ? `${num}.  ${title}` : `     ${title}`, font: "Calibri", size: 22, color: TEXT }),
+          new TextRun({ text: `  ............................................................................  ${page}`, font: "Calibri", size: 20, color: "AAAAAA" }),
+        ],
+        spacing: { before: 80, after: 80 },
+        indent: num && num.length === 1 ? {} : { left: convertInchesToTwip(0.3) },
+      })
+    ),
     pbk(),
   ];
 }
@@ -1290,7 +1312,7 @@ const docHeader = new Header({
         new TextRun({ text: "RecruitTracker — Rapport PFA", font: "Calibri", size: 18, color: "888888" }),
         new TextRun({ text: "    |    ITEAM University 2025/2026", font: "Calibri", size: 18, color: "bbbbbb" }),
       ],
-      border: { bottom: { color: MID_GRAY, space: 1, value: BorderStyle.SINGLE, size: 4 } },
+      border: { bottom: { color: MID_GRAY, space: 1, style: BorderStyle.SINGLE, size: 4 } },
     }),
   ],
 });
@@ -1299,11 +1321,11 @@ const docFooter = new Footer({
   children: [
     new Paragraph({
       children: [
-        new TextRun({ text: "ITEAM University – 2025/2026  |  Khedhri Takoua & Dhafer Smeti  |  Encadrant : Hassen Lazreg", font: "Calibri", size: 16, color: "888888" }),
-        new PageNumberElement(),
+        new TextRun({ text: "ITEAM University – 2025/2026  |  Khedhri Takoua & Dhafer Smeti  |  Encadrant : Hassen Lazreg    ", font: "Calibri", size: 16, color: "888888" }),
+        new SimpleField("PAGE", new TextRun({ text: "1", font: "Calibri", size: 16, color: "888888" })),
       ],
       alignment: AlignmentType.RIGHT,
-      border: { top: { color: MID_GRAY, space: 1, value: BorderStyle.SINGLE, size: 4 } },
+      border: { top: { color: MID_GRAY, space: 1, style: BorderStyle.SINGLE, size: 4 } },
     }),
   ],
 });

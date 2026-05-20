@@ -1,6 +1,5 @@
 package com.recrutement.app.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,10 +34,10 @@ public class MailService {
         try {
             var message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            helper.setFrom(fromAddress);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlContent, true);
+            helper.setFrom(fromAddress != null ? fromAddress : "noreply@recruittracker.com");
+            helper.setTo(to != null ? to : "");
+            helper.setSubject(subject != null ? subject : "");
+            helper.setText(htmlContent != null ? htmlContent : "", true);
             mailSender.send(message);
             log.info("Email envoyé à {} : {}", to, subject);
         } catch (Exception e) {

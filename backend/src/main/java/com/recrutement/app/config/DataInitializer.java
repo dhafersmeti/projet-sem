@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("=== Initialisation des données de démonstration RecruitTracker ===");
 
         // ── ADMIN ────────────────────────────────────────────────────────────
-        User admin = userRepository.save(User.builder()
+        userRepository.save(User.builder()
                 .name("Administrateur ITEAM")
                 .email("admin@iteam.tn")
                 .password(passwordEncoder.encode("admin123"))
