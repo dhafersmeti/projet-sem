@@ -25,9 +25,19 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    // Lien vers la table candidates pour les utilisateurs de type CANDIDATE
     @Column
     private Long candidateId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean firstLogin = true;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean enabled = true;
+
+    @Column
+    private String phone;
 
     public enum Role {
         ADMIN, RECRUITER, CANDIDATE

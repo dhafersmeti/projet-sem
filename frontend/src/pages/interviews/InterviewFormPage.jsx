@@ -9,8 +9,12 @@ import toast from 'react-hot-toast'
 
 export default function InterviewFormPage() {
   const navigate = useNavigate()
-  const [apps, setApps]       = useState([])
-  const [form, setForm]       = useState({ applicationId: '', date: '', time: '', location: '' })
+  const [apps, setApps]     = useState([])
+  const [form, setForm]     = useState({
+    applicationId: '', date: '', time: '',
+    location: '', meetingLink: '', preparationInstructions: '',
+    status: 'PLANNED',
+  })
   const [errors, setErrors]   = useState({})
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -27,9 +31,10 @@ export default function InterviewFormPage() {
     if (!form.applicationId) errs.applicationId = 'Sélectionnez une candidature'
     if (!form.date)          errs.date           = 'La date est obligatoire'
     if (!form.time)          errs.time           = "L'heure est obligatoire"
-    if (!form.location.trim()) errs.location     = 'Le lieu est obligatoire'
     return errs
   }
+
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,10 +44,13 @@ export default function InterviewFormPage() {
     setLoading(true)
     try {
       await interviewsApi.create({
-        applicationId: Number(form.applicationId),
-        date: form.date,
-        time: form.time,
-        location: form.location,
+        applicationId:          Number(form.applicationId),
+        date:                   form.date,
+        time:                   form.time,
+        location:               form.location || null,
+        meetingLink:            form.meetingLink || null,
+        preparationInstructions: form.preparationInstructions || null,
+        status:                 form.status,
       })
       toast.success('Entretien planifié avec succès')
       navigate('/interviews')
@@ -68,12 +76,13 @@ export default function InterviewFormPage() {
 
       <div className="card max-w-xl">
         <form onSubmit={handleSubmit} className="space-y-5">
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Candidature *</label>
             <select
               className={`input-field ${errors.applicationId ? 'border-red-400' : ''}`}
               value={form.applicationId}
-              onChange={(e) => setForm({ ...form, applicationId: e.target.value })}
+              onChange={set('applicationId')}
             >
               <option value="">-- Sélectionner une candidature --</option>
               {apps.map((a) => (
@@ -92,7 +101,7 @@ export default function InterviewFormPage() {
                 type="date"
                 className={`input-field ${errors.date ? 'border-red-400' : ''}`}
                 value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                onChange={set('date')}
               />
               {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
             </div>
@@ -102,21 +111,52 @@ export default function InterviewFormPage() {
                 type="time"
                 className={`input-field ${errors.time ? 'border-red-400' : ''}`}
                 value={form.time}
-                onChange={(e) => setForm({ ...form, time: e.target.value })}
+                onChange={set('time')}
               />
               {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Lieu (optionnel)</label>
+              <input
+                className="input-field"
+                value={form.location}
+                onChange={set('location')}
+                placeholder="Salle A, Paris..."
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <select className="input-field" value={form.status} onChange={set('status')}>
+                <option value="PLANNED">Planifié</option>
+                <option value="COMPLETED">Terminé</option>
+                <option value="CANCELLED">Annulé</option>
+              </select>
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Lieu *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Lien visioconférence (optionnel)</label>
             <input
-              className={`input-field ${errors.location ? 'border-red-400' : ''}`}
-              value={form.location}
-              onChange={(e) => setForm({ ...form, location: e.target.value })}
-              placeholder="Salle de conf. A, Visioconférence, etc."
+              type="url"
+              className="input-field"
+              value={form.meetingLink}
+              onChange={set('meetingLink')}
+              placeholder="https://meet.google.com/..."
             />
-            {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Instructions de préparation (optionnel)</label>
+            <textarea
+              className="input-field resize-none"
+              rows={3}
+              value={form.preparationInstructions}
+              onChange={set('preparationInstructions')}
+              placeholder="Préparez un exposé de 10 minutes sur votre parcours. Apportez votre portfolio..."
+            />
           </div>
 
           <div className="flex gap-3 pt-2">

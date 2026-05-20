@@ -1,0 +1,26 @@
+# Maven build output
+backend/target/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Uploads (CVs, PDFs générés)
+backend/uploads/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Env / secrets
+.env
+*.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude local settings
+.claude/settings.local.json

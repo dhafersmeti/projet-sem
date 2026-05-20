@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,9 +37,11 @@ public class ApplicationController {
     @PutMapping("/{id}/status")
     public ResponseEntity<ApplicationDto> updateStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> body) {
+            @RequestBody Map<String, String> body,
+            Authentication authentication) {
         String status = body.get("status");
-        return ResponseEntity.ok(applicationService.updateStatus(id, status));
+        String changedBy = authentication != null ? authentication.getName() : "system";
+        return ResponseEntity.ok(applicationService.updateStatus(id, status, changedBy));
     }
 
     @DeleteMapping("/{id}")

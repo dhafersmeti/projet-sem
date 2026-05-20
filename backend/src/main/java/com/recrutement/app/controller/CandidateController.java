@@ -21,6 +21,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/candidates")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class CandidateController {
 
     private final CandidateService candidateService;

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authApi } from '../api/authApi'
 import toast from 'react-hot-toast'
@@ -31,7 +31,11 @@ export default function LoginPage() {
       const { data } = await authApi.login(form)
       login(data)
       toast.success(`Bienvenue, ${data.name} !`)
-      navigate(data.role === 'CANDIDATE' ? '/portal' : '/')
+      if (data.mustChangePassword) {
+        navigate(data.role === 'CANDIDATE' ? '/portal/change-password' : '/change-password')
+      } else {
+        navigate(data.role === 'CANDIDATE' ? '/portal' : '/')
+      }
     } catch (err) {
       const msg = err.response?.data?.message || 'Erreur de connexion'
       toast.error(msg)
@@ -104,14 +108,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          Admin par défaut : admin@app.com / admin123
-        </p>
-
-        <p className="text-center text-sm text-gray-500 mt-3">
-          Candidat ?{' '}
-          <Link to="/candidate-register" className="text-primary-600 hover:underline font-medium">
-            Créer votre espace candidat
-          </Link>
+          Admin : admin@iteam.tn / admin123 &nbsp;|&nbsp; Recruteur : recruteur1@iteam.tn / recruiter123
         </p>
       </div>
     </div>

@@ -8,6 +8,7 @@ import com.recrutement.app.mapper.InterviewMapper;
 import com.recrutement.app.repository.ApplicationRepository;
 import com.recrutement.app.repository.InterviewRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,11 +18,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
+@SuppressWarnings("null")
 public class InterviewService {
 
     private final InterviewRepository interviewRepository;
     private final ApplicationRepository applicationRepository;
     private final InterviewMapper interviewMapper;
+    private final NotificationService notificationService;
 
     public List<InterviewDto> findAll() {
         return interviewRepository.findAll().stream()
@@ -44,13 +48,20 @@ public class InterviewService {
                 .date(dto.getDate())
                 .time(dto.getTime())
                 .location(dto.getLocation())
+                .meetingLink(dto.getMeetingLink())
+                .preparationInstructions(dto.getPreparationInstructions())
+                .status(Interview.Status.PLANNED)
                 .build();
 
-        // Mettre à jour le statut de la candidature
+        Interview saved = interviewRepository.save(interview);
+
         application.setStatus(Application.Status.INTERVIEW);
         applicationRepository.save(application);
 
-        return interviewMapper.toDto(interviewRepository.save(interview));
+        notificationService.createForInterview(saved);
+
+        log.info("Entretien créé pour candidature #{}", dto.getApplicationId());
+        return interviewMapper.toDto(saved);
     }
 
     public InterviewDto update(Long id, InterviewDto dto) {
@@ -59,6 +70,9 @@ public class InterviewService {
         interview.setDate(dto.getDate());
         interview.setTime(dto.getTime());
         interview.setLocation(dto.getLocation());
+        interview.setMeetingLink(dto.getMeetingLink());
+        interview.setPreparationInstructions(dto.getPreparationInstructions());
+        if (dto.getStatus() != null) interview.setStatus(dto.getStatus());
         return interviewMapper.toDto(interviewRepository.save(interview));
     }
 
@@ -67,5 +81,12 @@ public class InterviewService {
             throw new ResourceNotFoundException("Entretien introuvable avec l'id : " + id);
         }
         interviewRepository.deleteById(id);
+    }
+
+    public List<InterviewDto> findByApplicationId(Long applicationId) {
+        return interviewRepository.findAll().stream()
+                .filter(i -> i.getApplication().getId().equals(applicationId))
+                .map(interviewMapper::toDto)
+                .collect(Collectors.toList());
     }
 }

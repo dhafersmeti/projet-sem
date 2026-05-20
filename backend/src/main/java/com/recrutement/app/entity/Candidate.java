@@ -32,6 +32,23 @@ public class Candidate {
     @Column(columnDefinition = "TEXT")
     private String skills;
 
+    @Column(columnDefinition = "TEXT")
+    private String coverLetter;
+
+    @Column(columnDefinition = "TEXT")
+    private String experiences;
+
+    @Column(columnDefinition = "TEXT")
+    private String diplomas;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_job_offer_id")
+    private JobOffer targetJobOffer;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

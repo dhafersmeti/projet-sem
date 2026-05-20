@@ -1,6 +1,6 @@
 package com.recrutement.app.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import com.recrutement.app.entity.Interview;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -23,8 +23,9 @@ public class InterviewDto {
     @NotNull(message = "L'heure est obligatoire")
     private LocalTime time;
 
-    @NotBlank(message = "Le lieu est obligatoire")
     private String location;
-
+    private String meetingLink;
+    private String preparationInstructions;
+    private Interview.Status status;
     private boolean hasEvaluation;
 }

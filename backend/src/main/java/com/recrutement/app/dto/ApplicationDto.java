@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class ApplicationDto {
@@ -22,4 +23,6 @@ public class ApplicationDto {
     private String jobOfferTitle;
     private Application.Status status;
     private LocalDateTime appliedDate;
+    private LocalDateTime updatedAt;
+    private List<StatusHistoryEntryDto> statusHistory;
 }

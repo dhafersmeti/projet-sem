@@ -14,6 +14,8 @@ public class JobOfferDto {
     private String title;
 
     private String description;
+    private String requiredSkills;
     private LocalDateTime datePosted;
     private JobOffer.Status status;
+    private long applicationCount;
 }

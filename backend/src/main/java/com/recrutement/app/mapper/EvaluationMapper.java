@@ -11,7 +11,11 @@ public class EvaluationMapper {
         EvaluationDto dto = new EvaluationDto();
         dto.setId(evaluation.getId());
         dto.setInterviewId(evaluation.getInterview().getId());
-        dto.setScore(evaluation.getScore());
+        dto.setCompetenceScore(evaluation.getCompetenceScore());
+        dto.setAttitudeScore(evaluation.getAttitudeScore());
+        dto.setPotentialScore(evaluation.getPotentialScore());
+        dto.setGlobalScore(evaluation.getGlobalScore());
+        dto.setRecommendation(evaluation.getRecommendation());
         dto.setComment(evaluation.getComment());
         return dto;
     }

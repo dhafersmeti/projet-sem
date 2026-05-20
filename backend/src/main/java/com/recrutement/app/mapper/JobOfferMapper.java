@@ -12,8 +12,10 @@ public class JobOfferMapper {
         dto.setId(jobOffer.getId());
         dto.setTitle(jobOffer.getTitle());
         dto.setDescription(jobOffer.getDescription());
+        dto.setRequiredSkills(jobOffer.getRequiredSkills());
         dto.setDatePosted(jobOffer.getDatePosted());
         dto.setStatus(jobOffer.getStatus());
+        dto.setApplicationCount(jobOffer.getApplications().size());
         return dto;
     }
 
@@ -21,6 +23,7 @@ public class JobOfferMapper {
         JobOffer jobOffer = new JobOffer();
         jobOffer.setTitle(dto.getTitle());
         jobOffer.setDescription(dto.getDescription());
+        jobOffer.setRequiredSkills(dto.getRequiredSkills());
         if (dto.getStatus() != null) jobOffer.setStatus(dto.getStatus());
         return jobOffer;
     }
@@ -28,6 +31,7 @@ public class JobOfferMapper {
     public void updateEntity(JobOffer jobOffer, JobOfferDto dto) {
         jobOffer.setTitle(dto.getTitle());
         jobOffer.setDescription(dto.getDescription());
+        jobOffer.setRequiredSkills(dto.getRequiredSkills());
         if (dto.getStatus() != null) jobOffer.setStatus(dto.getStatus());
     }
 }

@@ -19,6 +19,12 @@ public class CandidateDto {
 
     private String phone;
     private String skills;
+    private String coverLetter;
+    private String experiences;
+    private String diplomas;
+    private Long targetJobOfferId;
+    private String targetJobOfferTitle;
     private String cvFileName;
     private LocalDateTime createdAt;
+    private Long userId;
 }

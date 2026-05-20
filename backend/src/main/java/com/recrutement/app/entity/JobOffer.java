@@ -23,6 +23,9 @@ public class JobOffer {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(columnDefinition = "TEXT")
+    private String requiredSkills;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime datePosted;
@@ -30,13 +33,13 @@ public class JobOffer {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private Status status = Status.OPEN;
+    private Status status = Status.PUBLISHED;
 
     @OneToMany(mappedBy = "jobOffer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private List<Application> applications = new ArrayList<>();
 
     public enum Status {
-        OPEN, CLOSED
+        DRAFT, PUBLISHED, CLOSED
     }
 }

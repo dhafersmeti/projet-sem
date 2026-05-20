@@ -14,24 +14,34 @@ import ApplicationFormPage             from './pages/applications/ApplicationFor
 import InterviewsPage                  from './pages/interviews/InterviewsPage'
 import InterviewFormPage               from './pages/interviews/InterviewFormPage'
 import EvaluationPage                  from './pages/interviews/EvaluationPage'
-import CandidateRegisterPage           from './pages/portal/CandidateRegisterPage'
-import CandidatePortalPage             from './pages/portal/CandidatePortalPage'
-import CandidateApplicationsListPage   from './pages/portal/CandidateApplicationsListPage'
-import CandidateApplicationDetailPage  from './pages/portal/CandidateApplicationDetailPage'
+import ReportsPage                     from './pages/reports/ReportsPage'
+import ChangePasswordPage              from './pages/portal/ChangePasswordPage'
 
-const STAFF = ['ADMIN', 'RECRUITER']
+import PortalHomePage                  from './pages/portal/PortalHomePage'
+import PortalProfilePage               from './pages/portal/PortalProfilePage'
+import PortalApplicationPage           from './pages/portal/PortalApplicationPage'
+import PortalInterviewsPage            from './pages/portal/PortalInterviewsPage'
+import PortalNotificationsPage         from './pages/portal/PortalNotificationsPage'
+import PortalOfferPage                 from './pages/portal/PortalOfferPage'
+
+const STAFF     = ['ADMIN', 'RECRUITER']
 const CANDIDATE = ['CANDIDATE']
+const ALL_AUTH  = ['ADMIN', 'RECRUITER', 'CANDIDATE']
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
         {/* Routes publiques */}
-        <Route path="/login"              element={<LoginPage />} />
-        <Route path="/candidate-register" element={<CandidateRegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Changement de mot de passe (staff + candidat) */}
+        <Route path="/change-password"         element={<ProtectedRoute allowedRoles={STAFF}><ChangePasswordPage /></ProtectedRoute>} />
+        <Route path="/portal/change-password"  element={<ProtectedRoute allowedRoles={CANDIDATE}><ChangePasswordPage /></ProtectedRoute>} />
 
         {/* Routes staff (admin + recruteur) */}
-        <Route path="/" element={<ProtectedRoute allowedRoles={STAFF}><DashboardPage /></ProtectedRoute>} />
+        <Route path="/"        element={<ProtectedRoute allowedRoles={STAFF}><DashboardPage /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute allowedRoles={STAFF}><ReportsPage /></ProtectedRoute>} />
 
         <Route path="/candidates"           element={<ProtectedRoute allowedRoles={STAFF}><CandidatesPage /></ProtectedRoute>} />
         <Route path="/candidates/new"       element={<ProtectedRoute allowedRoles={STAFF}><CandidateFormPage /></ProtectedRoute>} />
@@ -45,14 +55,17 @@ export default function App() {
         <Route path="/applications"         element={<ProtectedRoute allowedRoles={STAFF}><ApplicationsPage /></ProtectedRoute>} />
         <Route path="/applications/new"     element={<ProtectedRoute allowedRoles={STAFF}><ApplicationFormPage /></ProtectedRoute>} />
 
-        <Route path="/interviews"           element={<ProtectedRoute allowedRoles={STAFF}><InterviewsPage /></ProtectedRoute>} />
-        <Route path="/interviews/new"       element={<ProtectedRoute allowedRoles={STAFF}><InterviewFormPage /></ProtectedRoute>} />
+        <Route path="/interviews"              element={<ProtectedRoute allowedRoles={STAFF}><InterviewsPage /></ProtectedRoute>} />
+        <Route path="/interviews/new"          element={<ProtectedRoute allowedRoles={STAFF}><InterviewFormPage /></ProtectedRoute>} />
         <Route path="/interviews/:id/evaluate" element={<ProtectedRoute allowedRoles={STAFF}><EvaluationPage /></ProtectedRoute>} />
 
         {/* Routes portail candidat */}
-        <Route path="/portal"                    element={<ProtectedRoute allowedRoles={CANDIDATE}><CandidatePortalPage /></ProtectedRoute>} />
-        <Route path="/portal/applications"       element={<ProtectedRoute allowedRoles={CANDIDATE}><CandidateApplicationsListPage /></ProtectedRoute>} />
-        <Route path="/portal/applications/:id"   element={<ProtectedRoute allowedRoles={CANDIDATE}><CandidateApplicationDetailPage /></ProtectedRoute>} />
+        <Route path="/portal"               element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalHomePage /></ProtectedRoute>} />
+        <Route path="/portal/profile"       element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalProfilePage /></ProtectedRoute>} />
+        <Route path="/portal/application"   element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalApplicationPage /></ProtectedRoute>} />
+        <Route path="/portal/interviews"    element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalInterviewsPage /></ProtectedRoute>} />
+        <Route path="/portal/notifications" element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalNotificationsPage /></ProtectedRoute>} />
+        <Route path="/portal/offer"         element={<ProtectedRoute allowedRoles={CANDIDATE}><PortalOfferPage /></ProtectedRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />

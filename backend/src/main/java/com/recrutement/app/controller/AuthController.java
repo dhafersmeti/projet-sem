@@ -1,20 +1,20 @@
 package com.recrutement.app.controller;
 
-import com.recrutement.app.dto.CandidateRegisterRequest;
+import com.recrutement.app.dto.ChangePasswordRequest;
 import com.recrutement.app.dto.LoginRequest;
 import com.recrutement.app.dto.LoginResponse;
 import com.recrutement.app.dto.RegisterRequest;
-import com.recrutement.app.entity.Candidate;
 import com.recrutement.app.entity.User;
-import com.recrutement.app.repository.CandidateRepository;
 import com.recrutement.app.repository.UserRepository;
 import com.recrutement.app.security.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,25 +25,24 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
+@SuppressWarnings("null")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
-    private final CandidateRepository candidateRepository;
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        // Spring Security vérifie les credentials
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
         String token = jwtUtils.generateToken(userDetails);
-
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
 
         return ResponseEntity.ok(LoginResponse.builder()
@@ -52,6 +51,7 @@ public class AuthController {
                 .name(user.getName())
                 .role(user.getRole().name())
                 .candidateId(user.getCandidateId())
+                .mustChangePassword(user.isFirstLogin())
                 .build());
     }
 
@@ -67,38 +67,40 @@ public class AuthController {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(User.Role.RECRUITER)
+                .firstLogin(false)
+                .enabled(true)
                 .build();
 
         userRepository.save(newUser);
+        log.info("Recruteur créé : {}", request.getEmail());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "Recruteur créé avec succès"));
     }
 
-    @PostMapping("/candidate/register")
-    public ResponseEntity<?> registerCandidate(@Valid @RequestBody CandidateRegisterRequest request) {
-        Candidate candidate = candidateRepository.findByEmail(request.getEmail())
-                .orElse(null);
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                             Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        if (candidate == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "Aucun candidat trouvé avec cet email. Contactez le recruteur."));
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "L'ancien mot de passe est incorrect"));
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("message", "Un compte existe déjà pour cet email"));
-        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setFirstLogin(false);
+        userRepository.save(user);
 
-        User newUser = User.builder()
-                .name(candidate.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(User.Role.CANDIDATE)
-                .candidateId(candidate.getId())
-                .build();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String newToken = jwtUtils.generateToken(userDetails);
 
-        userRepository.save(newUser);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("message", "Compte candidat créé avec succès"));
+        log.info("Mot de passe changé pour : {}", email);
+        return ResponseEntity.ok(Map.of(
+                "message", "Mot de passe modifié avec succès",
+                "token", newToken,
+                "mustChangePassword", false
+        ));
     }
 }

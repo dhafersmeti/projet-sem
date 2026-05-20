@@ -16,6 +16,9 @@ public class InterviewMapper {
         dto.setDate(interview.getDate());
         dto.setTime(interview.getTime());
         dto.setLocation(interview.getLocation());
+        dto.setMeetingLink(interview.getMeetingLink());
+        dto.setPreparationInstructions(interview.getPreparationInstructions());
+        dto.setStatus(interview.getStatus());
         dto.setHasEvaluation(interview.getEvaluation() != null);
         return dto;
     }

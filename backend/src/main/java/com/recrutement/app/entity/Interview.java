@@ -25,9 +25,22 @@ public class Interview {
     @Column(nullable = false)
     private LocalTime time;
 
-    @Column(nullable = false)
     private String location;
+
+    private String meetingLink;
+
+    @Column(columnDefinition = "TEXT")
+    private String preparationInstructions;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private Status status = Status.PLANNED;
 
     @OneToOne(mappedBy = "interview", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Evaluation evaluation;
+
+    public enum Status {
+        PLANNED, COMPLETED, CANCELLED
+    }
 }

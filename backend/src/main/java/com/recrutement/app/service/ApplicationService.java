@@ -4,12 +4,15 @@ import com.recrutement.app.dto.ApplicationDto;
 import com.recrutement.app.entity.Application;
 import com.recrutement.app.entity.Candidate;
 import com.recrutement.app.entity.JobOffer;
+import com.recrutement.app.entity.StatusHistoryEntry;
 import com.recrutement.app.exception.ResourceNotFoundException;
 import com.recrutement.app.mapper.ApplicationMapper;
 import com.recrutement.app.repository.ApplicationRepository;
 import com.recrutement.app.repository.CandidateRepository;
 import com.recrutement.app.repository.JobOfferRepository;
+import com.recrutement.app.repository.StatusHistoryEntryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -21,12 +24,16 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
+@SuppressWarnings("null")
 public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final CandidateRepository candidateRepository;
     private final JobOfferRepository jobOfferRepository;
+    private final StatusHistoryEntryRepository statusHistoryEntryRepository;
     private final ApplicationMapper applicationMapper;
+    private final NotificationService notificationService;
 
     public List<ApplicationDto> findAll() {
         return applicationRepository.findAll(Sort.by(Sort.Direction.DESC, "appliedDate")).stream()
@@ -37,7 +44,7 @@ public class ApplicationService {
     public ApplicationDto findById(Long id) {
         Application application = applicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Candidature introuvable avec l'id : " + id));
-        return applicationMapper.toDto(application);
+        return applicationMapper.toDtoWithHistory(application);
     }
 
     public ApplicationDto create(ApplicationDto dto) {
@@ -49,21 +56,30 @@ public class ApplicationService {
         Application application = Application.builder()
                 .candidate(candidate)
                 .jobOffer(jobOffer)
-                .status(Application.Status.PENDING)
+                .status(Application.Status.RECEIVED)
                 .build();
 
-        return applicationMapper.toDto(applicationRepository.save(application));
+        Application saved = applicationRepository.save(application);
+        logStatusChange(saved, null, Application.Status.RECEIVED, "system");
+        return applicationMapper.toDto(saved);
     }
 
-    public ApplicationDto updateStatus(Long id, String status) {
+    public ApplicationDto updateStatus(Long id, String status, String changedBy) {
         Application application = applicationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Candidature introuvable avec l'id : " + id));
+        Application.Status newStatus;
         try {
-            application.setStatus(Application.Status.valueOf(status));
+            newStatus = Application.Status.valueOf(status);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Statut invalide : " + status);
         }
-        return applicationMapper.toDto(applicationRepository.save(application));
+        Application.Status oldStatus = application.getStatus();
+        application.setStatus(newStatus);
+        Application saved = applicationRepository.save(application);
+        logStatusChange(saved, oldStatus, newStatus, changedBy);
+        notificationService.createForStatusChange(saved, newStatus);
+        log.info("Statut candidature #{} : {} → {} (par {})", id, oldStatus, newStatus, changedBy);
+        return applicationMapper.toDto(saved);
     }
 
     public void delete(Long id) {
@@ -79,9 +95,18 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    public List<ApplicationDto> findByJobOfferId(Long jobOfferId) {
+        return applicationRepository.findByJobOfferIdOrderByUpdatedAtDesc(jobOfferId).stream()
+                .map(applicationMapper::toDtoWithHistory)
+                .collect(Collectors.toList());
+    }
+
     public long countActive() {
         return applicationRepository.countByStatusIn(
-                List.of(Application.Status.PENDING, Application.Status.INTERVIEW)
+                List.of(Application.Status.RECEIVED,
+                        Application.Status.UNDER_REVIEW,
+                        Application.Status.INTERVIEW,
+                        Application.Status.EVALUATION)
         );
     }
 
@@ -91,5 +116,16 @@ public class ApplicationService {
         ).stream()
                 .map(applicationMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    private void logStatusChange(Application application, Application.Status oldStatus,
+                                  Application.Status newStatus, String changedBy) {
+        StatusHistoryEntry entry = StatusHistoryEntry.builder()
+                .application(application)
+                .oldStatus(oldStatus)
+                .newStatus(newStatus)
+                .changedBy(changedBy)
+                .build();
+        statusHistoryEntryRepository.save(entry);
     }
 }

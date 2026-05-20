@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -38,12 +40,20 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
+                // Routes publiques
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/candidate/register").permitAll()
+                // Changement de mot de passe — tout utilisateur authentifié
+                .requestMatchers(HttpMethod.POST, "/api/auth/change-password").authenticated()
+                // Création recruteur — admin seulement (via /api/auth/register)
                 .requestMatchers(HttpMethod.POST, "/api/auth/register").hasRole("ADMIN")
-                // Routes réservées aux candidats
+                // Admin
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // Portail candidat
                 .requestMatchers("/api/candidate/**").hasRole("CANDIDATE")
-                // Toutes les autres routes API réservées admin/recruteur
+                // Recruteur/Admin
+                .requestMatchers("/api/recruiter/**").hasAnyRole("RECRUITER", "ADMIN")
+                // Tout le reste — recruteur ou admin
                 .requestMatchers("/api/**").hasAnyRole("ADMIN", "RECRUITER")
                 .anyRequest().permitAll()
             )
@@ -59,8 +69,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

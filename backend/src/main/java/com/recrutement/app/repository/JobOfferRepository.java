@@ -4,4 +4,5 @@ import com.recrutement.app.entity.JobOffer;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JobOfferRepository extends JpaRepository<JobOffer, Long> {
+    long countByStatus(JobOffer.Status status);
 }
